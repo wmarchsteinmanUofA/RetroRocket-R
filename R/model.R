@@ -1,4 +1,16 @@
 setOldClass("cv.glmnet")
+#' ROCKET model object
+#'
+#' @slot coefficients numeric.
+#' @slot model cv.glmnet.
+#' @slot kernels list.
+#' @slot features matrix.
+#' @slot rel_features matrix.
+#' @slot call call.
+#'
+#' @return none
+#' @export
+#'
 setClass(
   Class = "rROCKET",
   slots = c(
@@ -11,7 +23,18 @@ setClass(
   )
 )
 
-#data needs to be an array, or a matrix.  if matrix, then convert to array
+#' Fit a ROCKET model
+#'
+#' @param data a matrix (samples, timepoints) or array (samples, channels, timepoints)
+#' @param targets vector of regression dependent values
+#' @param n number of kernels to generate
+#' @param type "classification" or "regression"
+#' @param separate_mv method to use for separating channels, keep at FALSE
+#' @param features_to_use which features to use for the fit. If all, all features are retained. Otherwise, a character or character vector with feature types
+#'
+#' @return A rROCKET model object
+#' @export
+#'
 fit <- function(data, targets, n, type = "classification", separate_mv = FALSE, features_to_use = "all") {
   if (length(class(data)) == 2){
     data <- array(data, dim = c(nrow(data), 1, ncol(data)))
@@ -21,10 +44,18 @@ fit <- function(data, targets, n, type = "classification", separate_mv = FALSE, 
   kernel_list <- NULL
   kernel_list <- generate_kernels_for_data(data[1, , ], n)
   rocket_features <- rocket_transform(data, kernel_list)
+  features <- NULL
   if (features_to_use == "all"){
     features <- rocket_features[[1]]
     for (i in 2:length(rocket_features)){
       features <- cbind(features, rocket_features[[i]])
+    }
+  }
+  else{
+    features_temp <- rocket_features[features_to_use]
+    features <- features_temp[[1]]
+    for (i in 2:length(features_temp)){
+      features <- cbind(features, features_temp[[i]])
     }
   }
 
@@ -63,6 +94,13 @@ fit <- function(data, targets, n, type = "classification", separate_mv = FALSE, 
   return(model)
 }
 
+#' Summary
+#'
+#' @param rROCKET the rROCKET model to summarize
+#'
+#' @return none
+#' @export
+#'
 setMethod(
   f = "summary",
   signature = "rROCKET",
@@ -79,6 +117,14 @@ setMethod(
   }
 )
 
+#' Predict rROCKET
+#'
+#' @param rROCKET the rROCKET model to run a prediction on.
+#' @param data the data to predict from
+#'
+#' @return a list containing $predict, predicted values and $features, rocket features generated from data
+#' @export
+#'
 setMethod(
   f = "predict",
   signature = "rROCKET",

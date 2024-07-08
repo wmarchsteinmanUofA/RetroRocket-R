@@ -1,5 +1,16 @@
 #need to pass in a list of kernels, list of ts
 #data should be a 3d array
+#' Rocket_transform
+#' A custom implementation of a ROCKET transform
+#'
+#' @param data  a 3D array of data, of the form (samples, channels, timepoints)
+#' @param kernels a list of kernels generated from generate_kernels_from_data
+#' @param ... other arguments to pass through
+#'
+#' @return a list of transformed data, one matrix per feature type.
+#' @export
+#'
+
 rocket_transform <- function(data, kernels, ...){
   transform_list <- list()
   #add more features here.
@@ -171,6 +182,7 @@ generate_kernel <- function(dims, dilation, padding, len, bias, name, weight_val
   return(ker)
 }
 
+
 generate_kernels_for_data <- function(data_entry, n, lengths = c(7, 9, 11, 13, 15), seed = "none", tag = ""){
   kernel_list <- list(NULL)
   dims <- dim(data_entry)
@@ -194,6 +206,4 @@ generate_kernels_for_data <- function(data_entry, n, lengths = c(7, 9, 11, 13, 1
   }
   return(kernel_list[-1])
 }
-
-which(colnames(model@features) == "ker70_max_ind")
 

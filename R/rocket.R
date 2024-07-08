@@ -1,5 +1,16 @@
 #need to pass in a list of kernels, list of ts
 #data should be a 3d array
+#' Rocket_transform
+#' A custom implementation of a ROCKET transform
+#'
+#' @param data  a 3D array of data, of the form (samples, channels, timepoints)
+#' @param kernels a list of kernels generated from generate_kernels_from_data
+#' @param ... other arguments to pass through
+#'
+#' @return a list of transformed data, one matrix per feature type.
+#' @export
+#'
+
 rocket_transform <- function(data, kernels, ...){
   transform_list <- list()
   #add more features here.
@@ -110,6 +121,13 @@ calculate_lspv <- function(vec){
   return(c(ls, loc))
 }
 
+#' Pad time series
+#'
+#' @param ts time series sample
+#' @param padding number of zeros to pre- and post-pend
+#'
+#' @return time series with padding added to front and back
+#'
 pad_ts <- function(ts, padding){
   tr <- as.matrix(ts)
   if (dim(tr)[2] == 1) tr <- t(tr)
@@ -120,6 +138,13 @@ pad_ts <- function(ts, padding){
   return(new_t)
 }
 
+#' Create Kernel Dilation
+#'
+#' @param kernel the kernel weights to dilate
+#'
+#' @return A vector of kernel weights, appopriately dilated
+#' @export
+#'
 create_dilation <- function(kernel){
   weights <- kernel$weights
   dilation <- kernel$dilation
@@ -130,6 +155,14 @@ create_dilation <- function(kernel){
   return(t(matrix(unlist(new_mat), ncol = dim(kernel$weights)[1])))
 }
 
+#' Insert zeros between elements of a vector
+#'
+#' @param vec vector to insert into
+#' @param num_zeros number of zeros to insert between each element
+#'
+#' @return the modified vector with zeros inserted
+#' @export
+#'
 insert_zeros <- function(vec, num_zeros) {
   # Create a vector of zeros with the specified length
   zeros <- rep(0, num_zeros)
@@ -148,6 +181,21 @@ insert_zeros <- function(vec, num_zeros) {
 }
 
 
+#' Generate Kernel
+#' Generates a single kernel
+#'
+#' @param dims dimensions for weights (should be a two-element vector)
+#' @param dilation dilation value, should be generated from data
+#' @param padding padding value to pre- and post-pend to ts samples
+#' @param len kernel length, integer
+#' @param bias bias value, numeric
+#' @param name kernel name
+#' @param weight_values weight values from which to sample. "unif" and "norm" are options, as are a vector of numeric weights.
+#' @param seed random seed for reproducibility
+#'
+#' @return A ROCKET kernel
+#' @export
+#'
 generate_kernel <- function(dims, dilation, padding, len, bias, name, weight_values = c(1, 0, -1), seed = NA){
   if (!is.na(seed)){
     set.seed(seed)
@@ -171,6 +219,19 @@ generate_kernel <- function(dims, dilation, padding, len, bias, name, weight_val
   return(ker)
 }
 
+
+#' Generate Kernels From Data
+#' Given a time series sample, generate kernels.
+#'
+#' @param data_entry A single time series sample
+#' @param n Number of kernels to generate
+#' @param lengths possible kernel lengths
+#' @param seed random seed reproducibility
+#' @param tag appended extra label for kernels
+#'
+#' @return a list of kernels
+#' @export
+#'
 generate_kernels_for_data <- function(data_entry, n, lengths = c(7, 9, 11, 13, 15), seed = "none", tag = ""){
   kernel_list <- list(NULL)
   dims <- dim(data_entry)
@@ -194,6 +255,4 @@ generate_kernels_for_data <- function(data_entry, n, lengths = c(7, 9, 11, 13, 1
   }
   return(kernel_list[-1])
 }
-
-which(colnames(model@features) == "ker70_max_ind")
 

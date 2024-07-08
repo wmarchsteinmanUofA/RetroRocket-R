@@ -163,4 +163,3 @@ visualization_example <- function(){
   #heatmaps
 }
 
-plot_heatmaps()
